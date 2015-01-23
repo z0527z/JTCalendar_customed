@@ -217,12 +217,12 @@ static NSString *const kJTCalendarDaySelected = @"kJTCalendarDaySelected";
     [self setSelected:isSelected animated:YES];
     
 //    [self.calendarManager setCurrentDateSelected:self.date];
-
+    
     // dql
     [self addDateForSelected:self.date];
+    [self didDaySelected:self.date];
     
 //    [[NSNotificationCenter defaultCenter] postNotificationName:kJTCalendarDaySelected object:self.date];
-    [self didDaySelected:self.date];
     
     [self.calendarManager.dataSource calendarDidDateSelected:self.calendarManager date:self.date];
     
@@ -246,33 +246,158 @@ static NSString *const kJTCalendarDaySelected = @"kJTCalendarDaySelected";
 // dql
 - (void)addDateForSelected:(NSDate *)date
 {
-    if (self.calendarManager.dateSelected.count == 0) {
-        [self.calendarManager.dateSelected addObject:date];
+    //    if (self.calendarManager.dateSelected.count == 0) {
+    //        [self.calendarManager.dateSelected addObject:date];
+    //        [self.calendarManager.dayViewSelected addObject:self];
+    //    }
+    //    else if (self.calendarManager.dateSelected.count < 2) {
+    //        NSDate * startDate = [self.calendarManager.dateSelected firstObject];
+    //        NSTimeInterval interval = [startDate timeIntervalSinceDate:date];
+    //        if (interval < 0) {
+    //            [self.calendarManager.dateSelected insertObject:date atIndex:0];
+    //            [self.calendarManager.dayViewSelected insertObject:self atIndex:0];
+    //        }
+    //        else if (interval > 0) {
+    //            [self.calendarManager.dateSelected addObject:date];
+    //            [self.calendarManager.dayViewSelected addObject:self];
+    //        }
+    //    }
+    //    else if (self.calendarManager.dateSelected.count == 2 && ![self.calendarManager.dateSelected containsObject:self.date])
+    //    {
+    //        NSDate * firstDate = [self.calendarManager.dateSelected firstObject];
+    //        NSTimeInterval interval = [firstDate timeIntervalSinceDate:date];
+    //        if (interval < 0) {
+    //            [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:date];
+    //
+    //            JTCalendarDayView * firstObj = [self.calendarManager.dayViewSelected firstObject];
+    //            [self.calendarManager.dayViewSelected replaceObjectAtIndex:0 withObject:self];
+    //            [self.calendarManager.dayViewSelected addObject:firstObj];
+    //        }
+    //        else {
+    //            NSDate * secondDate = [self.calendarManager.dateSelected lastObject];
+    //            NSTimeInterval val = [secondDate timeIntervalSinceDate:date];
+    //            if (val > 0) {
+    //                [self.calendarManager.dateSelected replaceObjectAtIndex:1 withObject:date];
+    //
+    //                JTCalendarDayView * secondObj = self.calendarManager.dayViewSelected[1];
+    //                [self.calendarManager.dayViewSelected replaceObjectAtIndex:1 withObject:self];
+    //                [self.calendarManager.dayViewSelected addObject:secondObj];
+    //            }
+    //            else {
+    //                // 判断距离确定取的方向
+    //                if (abs((int)interval) > abs((int)val)) {
+    //                    [self.calendarManager.dateSelected replaceObjectAtIndex:1 withObject:self.date];
+    //                    JTCalendarDayView * secondObj = self.calendarManager.dayViewSelected[1];
+    //                    [self.calendarManager.dayViewSelected replaceObjectAtIndex:1 withObject:self];
+    //                    [self.calendarManager.dayViewSelected addObject:secondObj];
+    //                }
+    //                else if (abs((int)interval) <= abs((int)val)) {
+    //                    [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:self.date];
+    //                    JTCalendarDayView * firstObj = self.calendarManager.dayViewSelected[0];
+    //                    [self.calendarManager.dayViewSelected replaceObjectAtIndex:0 withObject:self];
+    //                    [self.calendarManager.dayViewSelected addObject:firstObj];
+    //                }
+    //            }
+    //        }
+    //
+    //    }
+
+    NSDateFormatter * formatter = [NSDateFormatter new];
+    formatter.dateFormat = @"yyyy-MM-dd";
+    
+    NSString * todayString = [formatter stringFromDate:[NSDate date]];
+
+    NSDate * dateToday = [formatter dateFromString:todayString];
+    BOOL isClicked = self.calendarManager.isClicked;
+    if (!isClicked && [self.calendarManager.dateSelected containsObject:dateToday]) {
+        [self.calendarManager.dateSelected removeAllObjects];
+        
+        NSString * startDateString = [NSString stringWithFormat:@"%@ 00:00", [formatter stringFromDate:self.date]];
+        NSString * endDateString = [NSString stringWithFormat:@"%@ 12:00", [formatter stringFromDate:self.date]];
+        
+        // 选择的不是今天，并且第一次选
+        formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+        
+        NSDate * startDate = [formatter dateFromString:startDateString];
+        NSDate * endDate = [formatter dateFromString:endDateString];
+        
+        [self.calendarManager.dateSelected addObject:endDate];
+        [self.calendarManager.dateSelected addObject:startDate];
+        [self.calendarManager.dayViewSelected addObject:self];
+        self.calendarManager.isClicked = YES;
+        
     }
-    else if (self.calendarManager.dateSelected.count < 2) {
-        NSDate * startDate = [self.calendarManager.dateSelected firstObject];
-        NSTimeInterval interval = [startDate timeIntervalSinceDate:date];
+    
+    if (![self.calendarManager.dateSelected containsObject:self.date]) {
+        
+        NSDate * firstDate = [self.calendarManager.dateSelected firstObject];
+        NSTimeInterval interval = [firstDate timeIntervalSinceDate:date];
         if (interval < 0) {
-            [self.calendarManager.dateSelected insertObject:date atIndex:0];
-        }
-        else if (interval > 0) {
-            [self.calendarManager.dateSelected addObject:date];
-        }
-    }
-    else if (self.calendarManager.dateSelected.count == 2 && ![self.calendarManager.dateSelected containsObject:date])
-    {
-//        NSDate * startDate = [self.calendarManager.dateSelected firstObject];
-//        NSTimeInterval interval = [startDate timeIntervalSinceDate:date];
-//        if (interval < 0) {
-//            [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:date];
-//        }
-//        else {
-//            NSDate * secondDate = [self.calendarManager.dateSelected lastObject];
-//            NSTimeInterval val = [secondDate timeIntervalSinceDate:date];
-//            if (val > 0) {
-//                [self.calendarManager.dateSelected replaceObjectAtIndex:1 withObject:date];
+//            if (self.calendarManager.dateSelected.count == 2) {
+                [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:date];
 //            }
-//        }
+//            else {
+//                [self.calendarManager.dateSelected insertObject:date atIndex:0];
+//            }
+            
+
+            JTCalendarDayView * firstObj = [self.calendarManager.dayViewSelected firstObject];
+            if (firstObj && self.calendarManager.dayViewSelected.count == 2) {
+                [self.calendarManager.dayViewSelected replaceObjectAtIndex:0 withObject:self];
+                [self.calendarManager.dayViewSelected addObject:firstObj];
+            }
+            else {
+                [self.calendarManager.dayViewSelected insertObject:self atIndex:0];
+            }
+        }
+        else {
+            if (self.calendarManager.dateSelected.count < 2) {
+//                [self.calendarManager.dateSelected addObject:date];
+//                [self.calendarManager.dayViewSelected addObject:self];
+            }
+            else {
+                NSDate * secondDate = [self.calendarManager.dateSelected lastObject];
+                NSTimeInterval val = [secondDate timeIntervalSinceDate:date];
+                if (val > 0) {
+                    
+                    [self.calendarManager.dateSelected replaceObjectAtIndex:1 withObject:date];
+                    
+                    if (self.calendarManager.dayViewSelected.count == 2) {
+                        JTCalendarDayView * secondObj = self.calendarManager.dayViewSelected[1];
+                        [self.calendarManager.dayViewSelected replaceObjectAtIndex:1 withObject:self];
+                        [self.calendarManager.dayViewSelected addObject:secondObj];
+                        
+                    }
+                    else {
+                        
+                        // 将结束时间置为当天的0点
+                        NSString * endDateString = [NSString stringWithFormat:@"%@ 00:00", [formatter stringFromDate:firstDate]];
+                        formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+                        NSDate * endDate = [formatter dateFromString:endDateString];
+                        [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:endDate];
+                        
+                        [self.calendarManager.dayViewSelected addObject:self];
+                    }
+                }
+                else {
+                    // 判断距离确定取的方向
+                    if (abs((int)interval) > abs((int)val)) {
+                        [self.calendarManager.dateSelected replaceObjectAtIndex:1 withObject:self.date];
+                        JTCalendarDayView * secondObj = self.calendarManager.dayViewSelected[1];
+                        [self.calendarManager.dayViewSelected replaceObjectAtIndex:1 withObject:self];
+                        [self.calendarManager.dayViewSelected addObject:secondObj];
+                    }
+                    else if (abs((int)interval) <= abs((int)val)) {
+                        [self.calendarManager.dateSelected replaceObjectAtIndex:0 withObject:self.date];
+                        JTCalendarDayView * firstObj = self.calendarManager.dayViewSelected[0];
+                        [self.calendarManager.dayViewSelected replaceObjectAtIndex:0 withObject:self];
+                        [self.calendarManager.dayViewSelected addObject:firstObj];
+                    }
+                }
+            }
+            
+        }
+
     }
 }
 // dql
@@ -282,10 +407,66 @@ static NSString *const kJTCalendarDaySelected = @"kJTCalendarDaySelected";
     if ([self isContainDate:dateSelected]) {
         if(!isSelected){
             [self setSelected:YES animated:YES];
+            
+            if (self.calendarManager.dayViewSelected.count > 2) {
+                JTCalendarDayView * preDayView = self.calendarManager.dayViewSelected[2];
+                if ([preDayView isKindOfClass:[JTCalendarDayView class]] && ![preDayView.date isEqualToDate:self.date]) {
+                    [preDayView setSelected:NO animated:YES];
+                    [self.calendarManager.dayViewSelected removeLastObject];
+                    
+                }
+            }
+
         }
         else {
             [self setSelected:NO animated:YES];
-            [self.calendarManager.dateSelected removeObject:dateSelected];
+            
+            NSDate * endDate = [self.calendarManager.dateSelected firstObject];
+            NSDate * startDate = [self.calendarManager.dateSelected lastObject];
+            NSTimeInterval interval = [endDate timeIntervalSinceDate:startDate];
+            if (interval == 43200) { // 取消最后一个点
+                [self.calendarManager.dateSelected removeAllObjects];
+            }
+            else if (interval > 43200) { // 两个点移除一个点时
+                
+                // 移除点击的点，添加最后一个点的12点进去
+                [self.calendarManager.dateSelected removeObject:dateSelected];
+                
+                NSDate * startDate = [self.calendarManager.dateSelected firstObject];
+                NSDateFormatter * formatter = [NSDateFormatter new];
+                formatter.dateFormat = @"yyyy-MM-dd";
+
+                NSString * endDateString = [NSString stringWithFormat:@"%@ 12:00", [formatter stringFromDate:startDate]];
+                
+                formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+                NSDate * endDate = [formatter dateFromString:endDateString];
+                [self.calendarManager.dateSelected insertObject:endDate atIndex:0];
+            }
+            
+            if (self.calendarManager.dateSelected.count == 0) {
+                NSDate * date = [NSDate date];
+                NSDateFormatter * formatter = [NSDateFormatter new];
+                formatter.dateFormat = @"yyyy-MM-dd";
+                NSString * startDateString = [NSString stringWithFormat:@"%@ 00:00", [formatter stringFromDate:date]];
+                NSString * endDateString = [NSString stringWithFormat:@"%@ 12:00", [formatter stringFromDate:date]];
+                
+                formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+                NSDate * startDate = [formatter dateFromString:startDateString];
+                NSDate * endDate = [formatter dateFromString:endDateString];
+                [self.calendarManager.dateSelected addObject:endDate];
+                [self.calendarManager.dateSelected addObject:startDate];
+                self.calendarManager.isClicked = NO;
+            }
+            
+            id objToRemove = nil;
+            for (JTCalendarDayView * currentView in self.calendarManager.dayViewSelected) {
+                if ([currentView.date isEqualToDate:dateSelected]) {
+                    objToRemove = currentView;
+                    break;
+                }
+            }
+            [self.calendarManager.dayViewSelected removeObject:objToRemove];
+
         }
     }
     else if(isSelected){
@@ -465,10 +646,11 @@ static NSString *const kJTCalendarDaySelected = @"kJTCalendarDaySelected";
 //        return YES;
 //    }
     NSString * dateText = [dateFormatter stringFromDate:date];
-    
+//    NSString * dateTodayText = [dateFormatter stringFromDate:[NSDate date]];
     for (NSDate * tmpDate in self.calendarManager.dateSelected) {
         NSString * dateString = [dateFormatter stringFromDate:tmpDate];
-        if ([dateString isEqualToString:dateText]) {
+        BOOL isClicked = self.calendarManager.isClicked;
+        if ([dateString isEqualToString:dateText] && isClicked) {
             return YES;
         }
     }

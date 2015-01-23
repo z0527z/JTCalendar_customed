@@ -27,6 +27,7 @@
     
     // dql
     self.dateSelected = [NSMutableArray array];
+    self.dayViewSelected = [NSMutableArray array];
     
     self->_currentDate = [NSDate date];
     self->_calendarAppearance = [JTCalendarAppearance new];

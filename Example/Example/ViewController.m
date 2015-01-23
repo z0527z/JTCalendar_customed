@@ -20,12 +20,45 @@
 {
     [super viewDidLoad];
     
+    self.view.backgroundColor = [UIColor whiteColor];
+    
     self.calendar = [JTCalendar new];
     
+    
+    UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = CGRectMake(200, 439, 115, 40);
+    [btn setTitle:@"模式改变" forState:UIControlStateNormal];
+    [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(didChangeModeTouch) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:btn];
     
     // All modifications on calendarAppearance have to be done before setMenuMonthsView and setContentView
     // Or you will have to call reloadAppearance
     {
+        NSDate * date = [NSDate date];
+        NSDateFormatter * formatter = [NSDateFormatter new];
+        formatter.dateFormat = @"yyyy-MM-dd";
+        NSString * startDateString = [NSString stringWithFormat:@"%@ 00:00", [formatter stringFromDate:date]];
+        NSString * endDateString = [NSString stringWithFormat:@"%@ 12:00", [formatter stringFromDate:date]];
+        
+        formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+        NSDate * startDate = [formatter dateFromString:startDateString];
+        NSDate * endDate = [formatter dateFromString:endDateString];
+        [self.calendar.dateSelected addObject:endDate];
+        [self.calendar.dateSelected addObject:startDate];
+        
+        
+        float width = [UIScreen mainScreen].bounds.size.width;
+        
+        JTCalendarMenuView * menuView = [[JTCalendarMenuView alloc] initWithFrame:CGRectMake(0, 20, width, 50)];
+        self.calendarMenuView = menuView;
+        [self.view addSubview:menuView];
+        
+        JTCalendarContentView * contentView = [[JTCalendarContentView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(menuView.frame), width, 300)];
+        self.calendarContentView = contentView;
+        [self.view addSubview:contentView];
+        
+        
         self.calendar.calendarAppearance.calendar.firstWeekday = 1; // Sunday == 1, Saturday == 7
         self.calendar.calendarAppearance.dayCircleRatio = 6. / 10.;
         self.calendar.calendarAppearance.ratioContentMenu = 2.;
@@ -115,7 +148,7 @@
 //    
 //    selectedDateArray;
     NSArray * dateSelected = self.calendar.dateSelected;
-    
+    NSLog(@"dateSelected:%@", dateSelected);
 //    NSString *key = [[self dateFormatter] stringFromDate:date];
 //    NSArray *events = eventsByDate[key];
 //    
@@ -137,13 +170,20 @@
 - (void)transitionExample
 {
     CGFloat newHeight = 300;
+    CGRect rect = self.calendarContentView.frame;
     if(self.calendar.calendarAppearance.isWeekMode){
         newHeight = 75.;
+        rect.size.height = 75.0f;
+    }
+    else {
+        rect.size.height = 300.0f;
     }
     
     [UIView animateWithDuration:.5
                      animations:^{
-                         self.calendarContentViewHeight.constant = newHeight;
+//                         self.calendarContentViewHeight.constant = newHeight;
+                        
+                         self.calendarContentView.frame = rect;
                          [self.view layoutIfNeeded];
                      }];
     [UIView animateWithDuration:.25
